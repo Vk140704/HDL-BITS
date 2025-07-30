@@ -1,8 +1,12 @@
-You are given a module add16 that performs a 16-bit addition. Instantiate two of them to create a 32-bit adder. One add16 module computes the lower 16 bits of the addition result, while the second add16 module computes the upper 16 bits of the result, after receiving the carry-out from the first adder. Your 32-bit adder does not need to handle carry-in (assume 0) or carry-out (ignored), but the internal modules need to in order to function correctly. (In other words, the add16 module performs 16-bit a + b + cin, while your module performs 32-bit a + b).
+An adder-subtractor can be built from an adder by optionally negating one of the inputs, which is equivalent to inverting the input then adding 1. The net result is a circuit that can do two operations: (a + b + 0) and (a + ~b + 1). See Wikipedia if you want a more detailed explanation of how this circuit works.
 
-Connect the modules together as shown in the diagram below. The provided module add16 has the following declaration:
+Build the adder-subtractor below.
+
+You are provided with a 16-bit adder module, which you need to instantiate twice:
 
 module add16 ( input[15:0] a, input[15:0] b, input cin, output[15:0] sum, output cout );
+
+Use a 32-bit wide XOR gate to invert the b input whenever sub is 1. (This can also be viewed as b[31:0] XORed with sub replicated 32 times. See replication operator.). Also connect the sub input to the carry-in of the adder.
 
 
 
@@ -11,16 +15,15 @@ ANSWER:
         module top_module(
     input [31:0] a,
     input [31:0] b,
+    input sub,
     output [31:0] sum
 );
-  
-    wire[15:0]sum1,sum2;
-    wire cout1;
-    wire cin_1=1'b0;
-    add16 adder1(.a(a[15:0]),.b(b[15:0]),.cin(cin_1),.sum(sum1),.cout(cout1));
-    add16 adder2(.a(a[31:16]),.b(b[31:16]),.cin(cout1),.sum(sum2),.cout());
-            
-    assign sum={sum2,sum1};
-        
-   
+    wire[31:0]b_xor;
+    wire carry_out_low,carry_out_hi;
+    wire[15:0]sum_low,sum_hi;
+    assign b_xor = b^{32{sub}};
+    add16 upper(.a(a[15:0]),.b(b_xor[15:0]),.cin(sub),.sum(sum_low),.cout(carry_out_low));
+    add16 lower(.a(a[31:16]),.b(b_xor[31:16]),.cin(carry_out_low),.sum(sum_hi),.cout(carry_out_hi));
+    
+    assign sum = {sum_hi,sum_low};
 endmodule
