@@ -31,11 +31,11 @@ module top_module (
 );
     always@(posedge clk)begin
         if(reset| enable & Q==12)
-           Q<=4'b0;
+           Q<=4'b1;
         else if(enable)
-            Q<=Q+1;
+            Q<=Q+1'b1;
         else
-            Q<=1'b0;
+            Q<=Q;
     end
     assign c_enable = enable ;
     assign c_load = (reset|enable & Q==12);
